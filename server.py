@@ -1,14 +1,23 @@
+#!/usr/bin/env python3
+"""UDP echo server used by the network diagnostic client."""
+
+import argparse
 import socket
 
-HOST="0.0.0.0"
-PORT=5005
 
-server=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-server.bind((HOST,PORT))
+def main():
+    parser = argparse.ArgumentParser(description="UDP echo server for network diagnostics.")
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=5005)
+    args = parser.parse_args()
 
-print(f"UDP server listening on {PORT}")
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as server:
+        server.bind((args.host, args.port))
+        print(f"UDP echo server listening on {args.host}:{args.port}", flush=True)
+        while True:
+            data, client_addr = server.recvfrom(65535)
+            server.sendto(data, client_addr)
 
-while True:
-	data, client_addr=server.recvfrom(1024)
-	print(f"Recieved: {data.decode()} from {client_addr}")
-	server.sendto(data,client_addr)
+
+if __name__ == "__main__":
+    main()
